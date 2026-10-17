@@ -1,0 +1,637 @@
+{
+  "name": "AI news workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -128,
+        80
+      ],
+      "id": "ee1131a7-8048-4b1a-9091-18a367dca91a",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss/search?q=\"artificial+intelligence\"+OR+AI+when:7d&hl=en-US&gl=US&ceid=US:en",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        96,
+        -80
+      ],
+      "id": "6234a8b3-da6b-4b62-9121-2d6ef821f4f3",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "maxItems": 15
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        768,
+        80
+      ],
+      "id": "429a677a-ed04-4317-9e16-48486a9e33b7",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        -32
+      ],
+      "id": "80bdc962-a964-4e7a-b2a0-0bae7f07e8e8",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\nCreate a professional HTML email newsletter titled\n\"Daily AI News\".\n\nUse the supplied article data to create a separate card\nfor each news story.\n\nEach card must include:\n1. Headline\n2. Relevant image using the supplied imageUrl\n3. Context summary\n4. Why it matters\n5. Clickable original article link\n\nDesign requirements:\n- White background with dark navy headings.\n- Images displayed above or beside each headline.\n- Rounded article cards with consistent spacing.\n- Responsive layout suitable for mobile email clients.\n- Use inline CSS for email compatibility.\n- Use the actual imageUrl supplied for each article.\n- If no valid image URL exists, omit the image.\n- Do not invent article details or image URLs.\n\nReturn the complete HTML email, not Markdown\nor a description of the HTML.\n\n\nIMPORTANT RULES FOR ARTICLE LINKS:\n\n1. Use the exact original article URL supplied in the RSS data.\n2. The original URL is stored in the article's \"link\" field.\n3. Never invent, rewrite, shorten, or replace an article URL.\n4. Never use example.com, example.org, or other placeholder URLs.\n5. Each \"Read Full Story\" button must link to the\n   corresponding article's original URL.\n6. If a valid URL is unavailable, omit the button.\n\nGenerate the link in this format:\n\n<a href=\"ORIGINAL_ARTICLE_URL\"\n   target=\"_blank\"\n   style=\"display:inline-block;padding:12px 24px;\n   background-color:#082747;color:#ffffff;\n   text-decoration:none;border-radius:6px;\">\n   Read Full Story\n</a>\n\nReplace ORIGINAL_ARTICLE_URL with the actual link\nfrom that specific article.\n\n\nIMAGE RULES:\n\n- Use the exact imageUrl supplied for the article.\n- Never invent an image URL.\n- Use only publicly accessible image URLs.\n- Do not use an article webpage URL as an image URL.\n- If the image URL is missing or invalid, omit the image.\n- Preserve the original article link separately.\n\nGenerate the image element as:\n\n<img src=\"ACTUAL_IMAGE_URL\"\n     alt=\"Article headline\"\n     width=\"620\"\n     style=\"display:block;width:100%;max-width:620px;\n     height:auto;border-radius:8px;\">\n\nReplace ACTUAL_IMAGE_URL with the supplied imageUrl.\n",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1408,
+        -32
+      ],
+      "id": "ec6feafd-325d-4c55-8ce1-69b04f3fb88a",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1328,
+        176
+      ],
+      "id": "ec80c7e4-22a8-4bf2-99f8-6c851110d1d4",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "2PgrjVCM6GNz0bAP",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "praveenpathange07@gmail.com",
+        "subject": "Daily AI News ",
+        "message": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1968,
+        176
+      ],
+      "id": "9958fe4a-8c9b-45e3-a4b5-9393e93b0a27",
+      "name": "Send a message",
+      "webhookId": "f7ac6533-6557-460d-8d70-60265d4c0d52",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "tKNuKUNuC5UCY8gn",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss/search?q=AI+model+OR+AI+research+when:1d&hl=en-IN&gl=IN&ceid=IN:en",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        96,
+        272
+      ],
+      "id": "1cc1b773-40d9-497e-867b-ea7a4b8015d4",
+      "name": "RSS Read1"
+    },
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss/search?q=OpenAI+OR+Google+Gemini+OR+Anthropic+when:1d&hl=en-IN&gl=IN&ceid=IN:en",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        96,
+        96
+      ],
+      "id": "3fbef4f6-a65d-4a39-84ac-e699b006c784",
+      "name": "RSS Read2"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        416,
+        64
+      ],
+      "id": "849b50ca-b22c-41a8-b5bb-ec9e0d00e00d",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst seen = new Set();\n\nreturn items.filter((item) => {\n  const article = item.json;\n\n  const title = String(article.title ?? \"\")\n    .trim()\n    .toLowerCase();\n\n  const link = String(article.link ?? article.url ?? \"\")\n    .trim();\n\n  // Skip articles without a title.\n  if (!title) return false;\n\n  // Remove URL fragments and trailing slashes.\n  const normalizedLink = link\n    .split(\"#\")[0]\n    .replace(/\\/+$/, \"\")\n    .toLowerCase();\n\n  // Use URL as the primary identifier, title as fallback.\n  const key = normalizedLink || title;\n\n  if (seen.has(key)) return false;\n\n  seen.add(key);\n  return true;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        80
+      ],
+      "id": "2aa66013-fff7-49a7-bfe0-5ccf6a8f7c33",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.link }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "html"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        976,
+        16
+      ],
+      "id": "273aedfb-47d6-4f75-9a70-e01ddc9f035f",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "html",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "imageUrl",
+              "cssSelector": "meta[property=\"og:image\"]",
+              "returnValue": "attribute",
+              "attribute": "content"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        912,
+        416
+      ],
+      "id": "00de9606-8df0-4f94-864e-1850e8410936",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1312,
+        368
+      ],
+      "id": "751b1f66-abd1-46c6-aac4-6bfad8910f49",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1CnInEDdrG6p6siHPddA9V4AfC6cck1O7PEPz_qjueq8",
+          "mode": "list",
+          "cachedResultName": "AI_Student_Preferences",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CnInEDdrG6p6siHPddA9V4AfC6cck1O7PEPz_qjueq8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1271822384,
+          "mode": "list",
+          "cachedResultName": "Students",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1CnInEDdrG6p6siHPddA9V4AfC6cck1O7PEPz_qjueq8/edit#gid=1271822384"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -112,
+        464
+      ],
+      "id": "e884ad12-65f9-480b-8864-89ef057211b3",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "3vKu66WH0DTPTibB",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        80,
+        480
+      ],
+      "id": "8250b161-bf8b-44dd-953b-ebe79c2440d5",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6248e5b0-840d-4b8b-9d39-02ed260cd82e",
+              "leftValue": "={{ $json['Consent        '] }}",
+              "rightValue": "Yes, I agree",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        288,
+        496
+      ],
+      "id": "0d317f9b-5b31-4dfc-8b88-4d9de9c3e42c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        688,
+        688
+      ],
+      "id": "bee58ae1-32d9-412e-8241-b0212ffec8bb",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "2PgrjVCM6GNz0bAP",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a personalized daily AI learning newsletter using the student's preferences and the RSS articles below.\n\nStudent name: {{ $('If').item.json.Name }}\nTopics of interest: {{ $json['Topics        '] }}\nSkill level: {{ $json['SkillLevel        '] }}\nPreferred content types: {{ $json['ContentTypes        '] }}\n\nRSS ARTICLES:\n{{ $('Code in JavaScript').isExecuted ? $('Code in JavaScript').all().map((item, i) => `${i + 1}. Title: ${item.json.title}\\nDescription: ${item.json.contentSnippet || item.json.content || 'No description available'}\\nURL: ${item.json.link}\\nPublished: ${item.json.pubDate}`).join('\\n\\n') : 'RSS articles are not available in this execution.' }}\n\nINSTRUCTIONS:\n1. Select articles relevant to the student's topics of interest.\n2. Explain the news in simple language suited to the student's skill level.\n3. Include each selected article's original title and URL.\n4. Include practical coding tasks and interview questions only when they match the student's preferred content types.\n5. If no articles match, say so honestly.\n6. Never invent news, facts, or URLs.\n7. Format the newsletter with a title, greeting, relevant news summaries, and a learning takeaway.\n\nLINK FORMATTING RULES:\n1. Write article links using this exact Markdown format: [Article title](https://example.com).\n2. Use the original URL exactly as provided in the RSS data.\n3. Do not add extra brackets, backslashes, or parentheses around links.\n4. Number each article clearly, with its title on a separate line.\n5. Do not invent article titles or claim an article says something that is not supported by its supplied description.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are an AI learning assistant who creates accurate, useful, and personalized newsletters for students. Use simple language appropriate to the student's skill level. Organize content with clear headings and practical examples. Never invent current news, facts, or article URLs."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        496,
+        480
+      ],
+      "id": "b5e8024a-8ae4-4a49-b1d7-7b58fbe4febc",
+      "name": "Basic LLM Chain1"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('If').item.json.Email }}",
+        "subject": "Your Personalized AI Learning Newsletter",
+        "message": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        576
+      ],
+      "id": "05f95140-5ec7-4d03-a0b0-a8e65b86736f",
+      "name": "Send a message1",
+      "webhookId": "63218376-c098-47fc-ab9a-42a7fb89cf8b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "tKNuKUNuC5UCY8gn",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "={{ $json.text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        816,
+        528
+      ],
+      "id": "20e88544-87c2-4ea5-a88b-025fe9100444",
+      "name": "Markdown"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "RSS Read1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS Read2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        []
+      ]
+    },
+    "RSS Read1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "RSS Read2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain1": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "f36890d7-619e-403a-bd16-babafa67dfc4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "81595247309a2326f99815206e55f4e1a559d3e1da03c3f0bac76201bceff49e"
+  },
+  "nodeGroups": [],
+  "id": "UP7ZwjDZoGF0QXHR",
+  "tags": []
+}
